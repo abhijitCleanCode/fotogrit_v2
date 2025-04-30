@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "R9V2BKZLAV.id.fotogrit.app",
+        "paths": ["*"]
+      }
+    ]
+  }
+}

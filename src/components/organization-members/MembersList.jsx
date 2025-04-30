@@ -1,0 +1,123 @@
+import { useState } from "react";
+// icons
+import { ButtonIcon, SearchBar } from "../abhijit-component";
+import { BiPlus } from "react-icons/bi";
+import { IoIosArrowUp } from "react-icons/io";
+import { FiFilter } from "react-icons/fi";
+import { Collapse } from "..";
+import { AddNewMembers, EditMembers, TableMembersList } from ".";
+
+const VIEWS = {
+  ADD_NEW: "Add_New_Member",
+  EDIT_MEMBER: "Edit_Member",
+};
+
+const SearchWithFilter = ({
+  className = "",
+  searchValue = "",
+  setSearchValue,
+  onFilterClick = () => {},
+  filterActive = false,
+  placeholder = "Search...",
+  disabled = false,
+  isLoading = false,
+}) => {
+  const handleSearchChange = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  return (
+    <div className={`flex items-center space-x-2 ${className}`} role="search">
+      <SearchBar
+        value={searchValue}
+        onChange={setSearchValue}
+        // disabled={disabled}
+      />
+
+      {/* drop down */}
+      <button
+        onClick={onFilterClick}
+        aria-label={filterActive ? "Close filters" : "Open filters"}
+        aria-pressed={filterActive}
+        className={`p-2 rounded-md ${
+          filterActive ? "bg-gray-200" : "hover:bg-gray-100"
+        }`}
+      >
+        <FiFilter className="mr-2 h-5 w-5" />
+      </button>
+    </div>
+  );
+};
+
+// mock api response format that matches what the table expects
+const mockData = {
+  data: [
+    {
+      id: 1,
+      membership_code: "0M0123",
+      user_code: "C-0121 Audrey",
+      requested_by: "Self",
+    },
+  ],
+  meta: {
+    total_page: 1,
+    total_record: 4,
+  },
+};
+
+const MembersList = () => {
+  const [currentView, setCurrentView] = useState(VIEWS.ADD_NEW);
+  const [isOpenAddNewMember, setIsOpenAddNewMember] = useState(false);
+
+  const handleEditClick = () => {
+    setCurrentView(VIEWS.EDIT_MEMBER);
+  };
+
+  const renderView = () => {
+    switch (currentView) {
+      case VIEWS.ADD_NEW:
+        return (
+          <>
+            <div className="flex items-center justify-between flex-wrap space-y-4">
+              <ButtonIcon
+                icon={isOpenAddNewMember ? IoIosArrowUp : BiPlus}
+                iconPosition="left"
+                onClick={() => setIsOpenAddNewMember((prev) => !prev)}
+              >
+                Add new member
+              </ButtonIcon>
+
+              <SearchWithFilter className="max-w-2xl" />
+            </div>
+
+            <Collapse isOpen={isOpenAddNewMember}>
+              <div className="mt-8">
+                <AddNewMembers />
+              </div>
+            </Collapse>
+
+            <div className="mt-8">
+              <TableMembersList
+                data={mockData}
+                isSuccess={true}
+                isLoading={false}
+                isError={false}
+                onEditClick={handleEditClick}
+              />
+            </div>
+          </>
+        );
+
+      case VIEWS.EDIT_MEMBER:
+        return (
+          <div className="mt-8">
+            <EditMembers />
+          </div>
+        );
+    }
+  };
+
+  return <>{renderView()}</>;
+};
+
+export default MembersList;
