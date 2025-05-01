@@ -43,6 +43,7 @@ export const apiCore = createApi({
     //! abhijit changes - added some tags. The tag naming is done with respect to pages
     "OrganizationType",
     "MainOrganization",
+    "OrganizationMembers",
   ],
   endpoints: () => ({}),
 });

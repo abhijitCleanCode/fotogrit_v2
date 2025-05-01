@@ -50,22 +50,6 @@ const SearchWithFilter = ({
   );
 };
 
-// mock api response format that matches what the table expects
-const mockData = {
-  data: [
-    {
-      id: 1,
-      membership_code: "0M0123",
-      user_code: "C-0121 Audrey",
-      requested_by: "Self",
-    },
-  ],
-  meta: {
-    total_page: 1,
-    total_record: 4,
-  },
-};
-
 const MembersList = (props) => {
   const { selectedOrganization, setSelectedOrganization } = props;
   console.log("members list :: selectedOrganization: ", selectedOrganization);
@@ -107,7 +91,7 @@ const MembersList = (props) => {
 
             <Collapse isOpen={isOpenAddNewMember}>
               <div className="mt-8">
-                <AddNewMembers />
+                <AddNewMembers selectedOrganization={selectedOrganization} />
               </div>
             </Collapse>
 
