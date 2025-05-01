@@ -71,6 +71,7 @@ const OrganizationMainOrganization = () => {
   const [currentView, setCurrentView] = useState(VIEW_STATES.LIST); // state managed view switching pattern + container component
   const [isOpenAddNewOrganization, setIsOpenAddNewOrganization] =
     useState(false); // Track open/close
+  const [selectedOrganization, setSelectedOrganization] = useState(); // store selected org in a state to know what org is being edited
 
   const [currentPage, setCurrentPage] = useState(1);
   const [limitPerPage] = useState(10);
@@ -110,6 +111,11 @@ const OrganizationMainOrganization = () => {
   } = useGetOrganizationListQuery({});
 
   const handleEditClick = useCallback((organization) => {
+    setSelectedOrganization(organization);
+    console.log(
+      "src :: pages :: OrganizationMainOrganization :: handleEditClick :: organization :: ",
+      organization
+    );
     setCurrentView(VIEW_STATES.EDIT);
   }, []);
 
@@ -172,7 +178,11 @@ const OrganizationMainOrganization = () => {
 
           {currentView === VIEW_STATES.EDIT && (
             <div className="mt-[32px]">
-              <FormEditOrganization />
+              <FormEditOrganization
+                initialValues={selectedOrganization}
+                optionsOrgTypes={optionsOrgTypes}
+                cities={optionsCities}
+              />
             </div>
           )}
         </CardBody>

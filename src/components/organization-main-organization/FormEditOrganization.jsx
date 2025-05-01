@@ -1,7 +1,7 @@
 //! abhijit changes
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // form related imports
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { add_new_organization_schema } from "./schemaValidation";
 // components
@@ -10,6 +10,9 @@ import FormInputAbhijit from "../abhijit-component/FormInputAbhijit";
 // icons
 import { IoIosArrowUp } from "react-icons/io";
 import { FiUploadCloud } from "react-icons/fi";
+import { SelectDropdown } from "../form-input";
+import { useUpdateOrganizationMutation } from "@/services/api/orgMainOrgApiSlice";
+import { toast } from "react-toastify";
 
 const FileUploadField = ({ register, errors, setValue, watch }) => {
   const logo = watch("logo");
@@ -110,62 +113,6 @@ const FileUploadField = ({ register, errors, setValue, watch }) => {
   );
 };
 
-const SocialMediaInput = ({
-  label,
-  field,
-  register,
-  errors,
-  watch,
-  setValue,
-}) => {
-  const handleChange = (e) => {
-    const { value } = e.target;
-    const normalizeValue = value.startsWith("http")
-      ? value
-      : `https://${value}`;
-    setValue(field, normalizeValue, { shouldValidate: true });
-  };
-
-  return (
-    <div className="space-y-1">
-      <label htmlFor={field} className="text-sm font-medium text-gray-700">
-        {label}
-      </label>
-      <div className="flex border border-gray-300 rounded-md overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-        <span className="px-3 py-2 bg-gray-100 text-gray-500 text-sm border-r">
-          https://
-        </span>
-        <input
-          id={field}
-          type="text"
-          {...register(field)}
-          onChange={handleChange}
-          placeholder={
-            field === "instagram"
-              ? "instagram.com/username"
-              : field === "facebook"
-              ? "facebook.com/username"
-              : field === "tiktok"
-              ? "tiktok.com/@username"
-              : "yourdomain.com"
-          }
-          className="px-3 py-2 bg-white text-gray-900 outline-none w-full rounded-r"
-          aria-describedby={`${field}-error`}
-        />
-      </div>
-      {errors[field] && (
-        <p
-          id={`${field}-error`}
-          className="text-[#FA7275] text-sm mt-1"
-          role="alert"
-        >
-          {errors[field].message}
-        </p>
-      )}
-    </div>
-  );
-};
-
 // main form component
 const FormEditOrganization = ({
   onSubmit,
@@ -173,6 +120,8 @@ const FormEditOrganization = ({
   isLoading = false,
   serverErrors,
   initialValues,
+  optionsOrgTypes,
+  cities,
 }) => {
   const {
     register,
@@ -180,47 +129,106 @@ const FormEditOrganization = ({
     formState: { errors, isValid, isDirty },
     setValue,
     watch,
+    control,
+    clearErrors,
     reset,
   } = useForm({
     resolver: yupResolver(add_new_organization_schema),
     mode: "onChange",
     defaultValues: {
-      code: "",
-      name: "",
-      shortname: "",
-      type: "",
-      city: "",
-      location: "",
-      pic: "",
+      id: initialValues.id || "",
+      code: initialValues.code || "",
+      name: initialValues.name || "",
+      short_name: initialValues.short_name || "",
+      legal_document_number: initialValues.legal_document_number || "",
+      org_type: initialValues.org_type || "",
+      city: initialValues.city || "",
+      location: initialValues.location || "",
+      pic: initialValues.pic || "",
       description: "",
-      website: "",
-      instagram: "",
-      facebook: "",
-      tiktok: "",
-      logo: null,
+      website: initialValues.website || "",
+      instagram: initialValues.instagram || "",
+      facebook: initialValues.facebook || "",
+      tiktok: initialValues.tiktok || "",
+      logo: initialValues.logo || "",
     },
   });
 
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [selectedOrgType, setSelectedOrgType] = useState("");
+  const [selectedCityValue, setSelectedCityValue] = useState("");
 
+  const [updateOrganization] = useUpdateOrganizationMutation();
   const handleFormSubmit = async (data) => {
+    console.log("edit org data :: ", data);
+
     try {
-      await onSubmit(data);
-      setSubmitSuccess(true);
-      // reset success message after 3 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 3000);
+      const formData = new FormData();
+      formData.append("id", data.id);
+      formData.append("code", data.code);
+      formData.append("name", data.name);
+      formData.append("short_name", data.short_name);
+      formData.append("legal_document_number", data.legal_document_number);
+      formData.append("org_type", data.org_type);
+      formData.append("city", data.city);
+      formData.append("location", data.location);
+      formData.append("pic", data.pic);
+      formData.append("description", data.description);
+      formData.append("website", data.website);
+      formData.append("instagram", data.instagram);
+      formData.append("facebook", data.facebook);
+      formData.append("tiktok", data.tiktok);
+      formData.append("logo", data.logo);
+
+      console.log("formData :: ", formData);
+
+      const response = await updateOrganization(formData).unwrap();
+      console.log("response :: ", response);
+      if (response.message === "success") {
+        reset();
+
+        toast.success(`${data.name} has been updated!`, {
+          position: "top-right",
+          theme: "light",
+        });
+      }
     } catch (error) {
-      console.error("Submission error:", error);
+      console.error("Failed:", error);
+      toast.error(`Failed: ${error?.data?.message}`, {
+        position: "top-right",
+        theme: "light",
+      });
     }
   };
 
   const handleDelete = async () => {};
 
-  const handleSocialInputChange = (field, value) => {
-    setValue(field, value, { shouldValidate: true });
+  // social field protocols
+  const [protocols, setProtocols] = useState({
+    website: "https://",
+    instagram: "https://",
+    facebook: "https://",
+    tiktok: "https://",
+  });
+  const handleSocialInputChange = (field, inputValue) => {
+    const manualProtocol = inputValue.startsWith("http://")
+      ? "http://"
+      : inputValue.startsWith("https://")
+      ? "https://"
+      : null;
+
+    const protocolToUse = manualProtocol || protocols[field] || "https://";
+
+    const domain = inputValue.replace(/^https?:\/\//, "");
+
+    setProtocols((prev) => ({
+      ...prev,
+      [field]: protocolToUse,
+    }));
+
+    setValue(field, protocolToUse + domain, { shouldValidate: true });
   };
+  const getDomainOnly = (field) =>
+    watch(field)?.replace(/^https?:\/\//, "") || "";
 
   return (
     <div className="mt-[32px]">
@@ -254,23 +262,75 @@ const FormEditOrganization = ({
             type="text"
             label="Organization Shortname"
             placeholder="Enter Organization Shortname"
-            {...register("shortname")}
-            error={errors.shortname?.message || serverErrors?.shortname}
+            {...register("short_name")}
+            error={errors.short_name?.message || serverErrors?.short_name}
           />
           <FormInputAbhijit
             type="text"
-            label="Organization Type"
-            placeholder="Enter Organization Type"
-            {...register("type")}
-            error={errors.type?.message || serverErrors?.type}
+            label="Legal Document Number"
+            placeholder="Enter Legal Document Number"
+            {...register("legal_document_number")}
+            // error={errors.legal_document_number?.message || serverErrors?.shortname}
           />
-          <FormInputAbhijit
-            type="text"
-            label="City"
-            placeholder="Enter Organization City"
-            {...register("city")}
-            error={errors.city?.message || serverErrors?.city}
-          />
+          <div className="z-[21]">
+            <Controller
+              control={control}
+              name="org_type"
+              render={({ field }) => {
+                useEffect(() => {
+                  setSelectedOrgType(field.label);
+                }, [field.value]);
+                return (
+                  <SelectDropdown
+                    field={field}
+                    name="org_type"
+                    data={optionsOrgTypes}
+                    label="Organization Type"
+                    placeholder="Select Organization Type"
+                    selectedValue={selectedOrgType}
+                    setSelectedValue={(val) => {
+                      console.log(val);
+                      setSelectedOrgType(val?.label);
+                      field.onChange(val?.label);
+                    }}
+                    error={errors.org_type?.message || serverErrors?.org_type}
+                    setSearchQueryOption={() => {}}
+                    infiniteScroll
+                    setPageOption={() => {}}
+                  />
+                );
+              }}
+            />
+          </div>
+          <div className="ms:z-10">
+            <Controller
+              control={control}
+              name="city"
+              render={({ field }) => {
+                useEffect(() => {
+                  setSelectedCityValue(field.value);
+                }, [field.value]);
+                return (
+                  <SelectDropdown
+                    field={field}
+                    name="city"
+                    data={cities}
+                    label="City"
+                    placeholder="Select City"
+                    selectedValue={selectedCityValue}
+                    setSelectedValue={(val) => {
+                      setSelectedCityValue(val?.label);
+                      field.onChange(val?.value);
+                    }}
+                    error={errors.city?.message || serverErrors?.city}
+                    setSearchQueryOption={() => {}}
+                    infiniteScroll
+                    setPageOption={() => {}}
+                  />
+                );
+              }}
+            />
+          </div>
           <FormInputAbhijit
             type="text"
             label="Location"
@@ -293,42 +353,44 @@ const FormEditOrganization = ({
             error={errors.description?.message || serverErrors?.description}
           />
 
-          {/* social media*/}
-          <SocialMediaInput
-            label="Website"
-            field="website"
-            register={register}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
-          />
-
-          <SocialMediaInput
-            label="Instagram"
-            field="instagram"
-            register={register}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
-          />
-
-          <SocialMediaInput
-            label="Facebook"
-            field="facebook"
-            register={register}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
-          />
-
-          <SocialMediaInput
-            label="TikTok"
-            field="tiktok"
-            register={register}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
-          />
+          {/* Social Media Fields */}
+          {["website", "instagram", "facebook", "tiktok"].map((field) => (
+            <div className="space-y-1" key={field}>
+              <label className="text-sm font-medium text-gray-500 capitalize">
+                {field}
+              </label>
+              <div className="flex border border-gray-400 rounded-md overflow-hidden shadow-sm">
+                <span className="px-3 py-2 bg-gray-100 text-gray-500 text-sm border-r">
+                  {protocols[field]}
+                </span>
+                <Controller
+                  name={field}
+                  control={control}
+                  render={({ field: { ref, ...fieldProps } }) => (
+                    <input
+                      {...fieldProps}
+                      type="text"
+                      placeholder={
+                        field === "website"
+                          ? "airone.com"
+                          : `${field}.com/username`
+                      }
+                      className="px-3 py-2 bg-white text-black outline-none focus:bg-gray-100 duration-200 w-full rounded-[0.5rem]"
+                      value={getDomainOnly(field)}
+                      onChange={(e) =>
+                        handleSocialInputChange(field, e.target.value)
+                      }
+                    />
+                  )}
+                />
+              </div>
+              {errors[field] && (
+                <p className="text-[#FA7275] text-sm mt-1">
+                  {errors[field].message}
+                </p>
+              )}
+            </div>
+          ))}
 
           <div className="absolute bottom-0 right-0 pb-2 mr-2 mt-4 flex flex-col justify-end item-end gap-4">
             <FileUploadField
@@ -350,8 +412,8 @@ const FormEditOrganization = ({
               <ButtonIcon
                 type="submit"
                 variant="primary"
-                disabled={!isValid || isLoading}
-                isLoading={isLoading}
+                // disabled={!isValid || isLoading}
+                // isLoading={isLoading}
               >
                 Add
               </ButtonIcon>

@@ -72,7 +72,7 @@ const OrganizationType = () => {
   const [currentView, setCurrentView] = useState(VIEW_STATES.LIST); // state managed view switching pattern + container component
   const [isOpenAddNewOrganizationType, setIsOpenAddNewOrganizationType] =
     useState(false); // Track open/close
-  const [selectedOrganizationType, setSelectedOrganizationType] = useState(); // store selected item in state to know what item is being edited
+  const [selectedOrganizationType, setSelectedOrganizationType] = useState(); // store selected org in state to know what org is being edited
   const [isConfirm, setIsConfirm] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 

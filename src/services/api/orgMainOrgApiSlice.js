@@ -16,8 +16,19 @@ export const MainOrganizationSlice = apiCore.injectEndpoints({
       }),
       invalidatesTags: ["MainOrganization"],
     }),
+    updateOrganization: builder.mutation({
+      query: (body) => ({
+        url: `/restricted/api/v1/orgs`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["MainOrganization"],
+    }),
   }),
 });
 
-export const { useGetOrganizationListQuery, useAddNewOrganizationMutation } =
-  MainOrganizationSlice;
+export const {
+  useGetOrganizationListQuery,
+  useAddNewOrganizationMutation,
+  useUpdateOrganizationMutation,
+} = MainOrganizationSlice;

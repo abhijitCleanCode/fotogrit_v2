@@ -28,8 +28,8 @@ const TableMembersList = (props) => {
       {
         id: "membership-code",
         name: "Membership Code",
-        selector: (row) => row.membership_code || "-",
-        cell: (row) => row.membership_code || "-",
+        selector: (row) => row.code || "-",
+        cell: (row) => row.code || "-",
         sortable: true,
         minWidth: "160px",
         wrap: true,
@@ -37,8 +37,8 @@ const TableMembersList = (props) => {
       {
         id: "user-code",
         name: "User Code",
-        selector: (row) => row.user_code || "-",
-        cell: (row) => row.user_code || "-",
+        selector: (row) => row.user || "-",
+        cell: (row) => row.user || "-",
         sortable: true,
         minWidth: "160px",
         wrap: true,
@@ -72,7 +72,7 @@ const TableMembersList = (props) => {
     [onEditClick]
   );
 
-  const dataTable = data?.data;
+  const dataTable = data?.data?.members;
   const meta = data?.meta;
 
   const totalPages = meta?.total_page;

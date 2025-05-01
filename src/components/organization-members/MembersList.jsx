@@ -6,6 +6,7 @@ import { IoIosArrowUp } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { Collapse } from "..";
 import { AddNewMembers, EditMembers, TableMembersList } from ".";
+import { useGetOrganizationMembersListQuery } from "@/services/api/orgMembersApiSlice";
 
 const VIEWS = {
   ADD_NEW: "Add_New_Member",
@@ -65,9 +66,23 @@ const mockData = {
   },
 };
 
-const MembersList = () => {
+const MembersList = (props) => {
+  const { selectedOrganization, setSelectedOrganization } = props;
+  console.log("members list :: selectedOrganization: ", selectedOrganization);
+
   const [currentView, setCurrentView] = useState(VIEWS.ADD_NEW);
   const [isOpenAddNewMember, setIsOpenAddNewMember] = useState(false);
+
+  const {
+    data: orgMembers,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetOrganizationMembersListQuery({
+    org: selectedOrganization?.value,
+  });
+  console.log("members list :: data: ", orgMembers);
 
   const handleEditClick = () => {
     setCurrentView(VIEWS.EDIT_MEMBER);
@@ -98,7 +113,7 @@ const MembersList = () => {
 
             <div className="mt-8">
               <TableMembersList
-                data={mockData}
+                data={orgMembers}
                 isSuccess={true}
                 isLoading={false}
                 isError={false}
