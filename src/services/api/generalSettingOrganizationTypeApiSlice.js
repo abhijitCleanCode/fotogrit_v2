@@ -16,10 +16,19 @@ export const organizationTypeSlice = apiCore.injectEndpoints({
       }),
       invalidatesTags: ["OrganizationType"],
     }),
+    updateOrganizationType: builder.mutation({
+      query: (body) => ({
+        url: `/restricted/api/v1/org-types`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["OrganizationType"],
+    }),
   }),
 });
 
 export const {
   useGetOrganizationTypeListQuery,
   useAddNewOrganizationTypeMutation,
+  useUpdateOrganizationTypeMutation,
 } = organizationTypeSlice;

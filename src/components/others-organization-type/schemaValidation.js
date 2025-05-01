@@ -21,7 +21,7 @@ const add_new_organization_type_schema = yup.object({
 const edit_organization_type_schema = yup.object({
   code: yup
     .string()
-    .required("Organization Type Code is a required field")
+    // .required("Organization Type Code is a required field")
     .max(20, "Code must be less than 20 characters"),
   // .matches(/^[A-Z0-9_]+$/, "Code must be uppercase letters, numbers, and underscores"),
 
@@ -32,7 +32,7 @@ const edit_organization_type_schema = yup.object({
 
   description: yup
     .string()
-    .required("Description is a required field")
+    // .required("Description is a required field")
     .max(500, "Description must be less than 500 characters"),
 });
 

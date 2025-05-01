@@ -7,23 +7,17 @@ const LazyButtonIcon = lazy(() =>
 const LazyAddNewOrganizationForm = lazy(() =>
   import("./AddNewOrganizationForm")
 );
+const LazyEditOrganizationTypeForm = lazy(() =>
+  import("./EditOrganizationTypeForm")
+);
 const LazyTableOrganizationType = lazy(() => import("./TableOrganizationType"));
 import { SkeletonBlock, SkeletonForm, SkeletonTable } from "../Skeleton";
 
-// form related imports
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  add_new_organization_type_schema,
-  edit_organization_type_schema,
-} from "./schemaValidation";
 // icons
 import { FiEdit2, FiFilter } from "react-icons/fi";
 import { BiPlus } from "react-icons/bi";
 import { IoIosArrowUp } from "react-icons/io";
 // custom components
-import { ButtonIcon } from "../abhijit-component";
-import FormInputAbhijit from "../abhijit-component/FormInputAbhijit";
 import { SearchInputAbhijit } from "../abhijit-component";
 import { Collapse } from "..";
 import useDebounce from "@/hooks/useDebounce";
@@ -68,77 +62,6 @@ const SearchWithFilter = ({
   );
 };
 
-const EditOrganizationType_View = (props) => {
-  const { switchView, onSubmit, serverErrors } = props;
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting, isValid },
-  } = useForm({
-    resolver: yupResolver(edit_organization_type_schema),
-    mode: "onChange", // Validate on change
-    defaultValues: {
-      code: "",
-      name: "",
-      description: "",
-    },
-  });
-
-  const handleFormSubmit = async (data) => {
-    console.log("data :: ", data);
-
-    try {
-      await onSubmit(data);
-      reset();
-    } catch (error) {
-      console.error("Submitting error: ", error);
-    }
-  };
-
-  return (
-    <div className="">
-      <ButtonIcon icon={FiEdit2} iconPosition="left">
-        Edit Organization Type
-      </ButtonIcon>
-
-      <div className="relative min-h-[52vh] p-4 py-8 mt-[32px] bg-white shadow-lg">
-        <form className="grid grid-flow-row-dense md:grid-cols-3 lg:grid-cols-3 gap-4 sm:grid-cols-1 gap-y-2">
-          <FormInputAbhijit
-            type="text"
-            label="Organization Type Code"
-            placeholder="OT001"
-            {...register("code")}
-            error={errors.code?.message || serverErrors?.code}
-            autoComplete="off"
-            autoFocus
-          />
-          <FormInputAbhijit
-            type="text"
-            label="Organization Type Name"
-            placeholder="Enter organization Type Name"
-            {...register("name")}
-            error={errors.name?.message || serverErrors?.name}
-            autoComplete="off"
-          />
-          <FormInputAbhijit
-            type="text"
-            label="Description"
-            placeholder="Enter Description"
-            {...register("description")}
-            error={errors.description?.message || serverErrors?.description}
-            autoComplete="off"
-          />
-
-          <div className="absolute bottom-0 right-0 pb-2 mr-2 mt-4 flex justify-end gap-4">
-            <ButtonIcon type="submit">Save</ButtonIcon>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
 const VIEW_STATES = {
   LIST: "All_Organizations_Type",
   EDIT: "Edit_Organization_Type",
@@ -149,6 +72,7 @@ const OrganizationType = () => {
   const [currentView, setCurrentView] = useState(VIEW_STATES.LIST); // state managed view switching pattern + container component
   const [isOpenAddNewOrganizationType, setIsOpenAddNewOrganizationType] =
     useState(false); // Track open/close
+  const [selectedOrganizationType, setSelectedOrganizationType] = useState(); // store selected item in state to know what item is being edited
   const [isConfirm, setIsConfirm] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
@@ -165,6 +89,7 @@ const OrganizationType = () => {
 
   const handleEditClick = (organizationType) => {
     // store selected item in state to know what item is being edited
+    setSelectedOrganizationType(organizationType);
     setCurrentView(VIEW_STATES.EDIT);
   };
 
@@ -223,7 +148,21 @@ const OrganizationType = () => {
         </section>
       )}
 
-      {currentView === VIEW_STATES.EDIT && <EditOrganizationType_View />}
+      {currentView === VIEW_STATES.EDIT && (
+        <div>
+          <Suspense fallback={<SkeletonBlock />}>
+            <LazyButtonIcon icon={FiEdit2} iconPosition="left">
+              Edit Organization Type
+            </LazyButtonIcon>
+          </Suspense>
+
+          <Suspense fallback={<SkeletonForm cols={4} rows={4} />}>
+            <LazyEditOrganizationTypeForm
+              selectedOrganizationType={selectedOrganizationType}
+            />
+          </Suspense>
+        </div>
+      )}
     </>
   );
 };
