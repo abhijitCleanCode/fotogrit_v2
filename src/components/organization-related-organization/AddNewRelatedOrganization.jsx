@@ -48,10 +48,12 @@ const AddNewRelatedOrganization = (props) => {
     isError,
     error,
   } = useGetOrganizationListQuery({});
-  const optionsOrganizationList = organizationList?.data?.orgs?.map((org) => ({
-    value: org,
-    label: org?.name,
-  }));
+  const optionsOrganizationList = organizationList?.data?.orgs
+    ?.filter((org) => org?.id !== parentOrganization.value)
+    ?.map((org) => ({
+      value: org,
+      label: org?.name,
+    }));
   if (Array.isArray(optionsOrganizationList)) {
     optionsOrganizationList.unshift({ value: "", label: "Select Parent" });
   }

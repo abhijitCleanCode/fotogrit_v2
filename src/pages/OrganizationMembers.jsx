@@ -76,7 +76,7 @@ const OrganizationMembers = () => {
             </Tab>
             <Tab label="Changes Logs">
               <TabPanel>
-                <MembersList />
+                <ChangesLog />
               </TabPanel>
             </Tab>
           </Tabs>

@@ -38,7 +38,7 @@ const EditOrganizationTypeForm = (props) => {
 
     try {
       const formData = new FormData();
-
+      // formData.append("code", data.code);
       formData.append("id", data.id);
       formData.append("name", data.name);
       // formData.append("description", data.description);
@@ -56,8 +56,8 @@ const EditOrganizationTypeForm = (props) => {
         // switchView("list");
       }
     } catch (error) {
-      console.error("Failed:", err);
-      toast.error(`Failed: ${err?.data?.message}`, {
+      console.error("Failed:", error);
+      toast.error(`Failed: ${error?.data?.message}`, {
         position: "top-right",
         theme: "light",
       });

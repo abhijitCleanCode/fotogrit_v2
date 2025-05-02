@@ -54,6 +54,7 @@ const MembersList = (props) => {
   const { selectedOrganization, setSelectedOrganization } = props;
   console.log("members list :: selectedOrganization: ", selectedOrganization);
 
+  const [selectedMember, setSelectedMember] = useState(null);
   const [currentView, setCurrentView] = useState(VIEWS.ADD_NEW);
   const [isOpenAddNewMember, setIsOpenAddNewMember] = useState(false);
 
@@ -68,7 +69,9 @@ const MembersList = (props) => {
   });
   console.log("members list :: data: ", orgMembers);
 
-  const handleEditClick = () => {
+  const handleEditClick = (member) => {
+    // store selected item in state to know what item is being edited
+    setSelectedMember(member);
     setCurrentView(VIEWS.EDIT_MEMBER);
   };
 
@@ -110,7 +113,10 @@ const MembersList = (props) => {
       case VIEWS.EDIT_MEMBER:
         return (
           <div className="mt-8">
-            <EditMembers />
+            <EditMembers
+              setCurrentView={setCurrentView}
+              selectedMember={selectedMember}
+            />
           </div>
         );
     }

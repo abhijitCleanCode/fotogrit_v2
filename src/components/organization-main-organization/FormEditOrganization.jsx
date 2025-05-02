@@ -122,6 +122,7 @@ const FormEditOrganization = ({
   initialValues,
   optionsOrgTypes,
   cities,
+  setCurrentView,
 }) => {
   const {
     register,
@@ -232,7 +233,11 @@ const FormEditOrganization = ({
 
   return (
     <div className="mt-[32px]">
-      <ButtonIcon icon={IoIosArrowUp} iconPosition="left">
+      <ButtonIcon
+        icon={IoIosArrowUp}
+        iconPosition="left"
+        onClick={() => setCurrentView("All_Organizations_list")}
+      >
         Edit Organization
       </ButtonIcon>
       <div className="space-y-8 relative min-h-[70vh] p-4 py-8 mt-8 bg-white shadow-lg rounded-md">

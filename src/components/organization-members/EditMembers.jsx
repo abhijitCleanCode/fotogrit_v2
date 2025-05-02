@@ -4,7 +4,9 @@ import { ButtonIcon } from "../abhijit-component";
 import { FiEdit2 } from "react-icons/fi";
 
 const EditMembers = (props) => {
-  const { switchView, onSubmit, serverErrors } = props;
+  const { switchView, onSubmit, serverErrors, setCurrentView, selectedMember } =
+    props;
+  console.log("editMembers :: selectedMember :: ", selectedMember);
   const {
     register,
     handleSubmit,
@@ -14,8 +16,8 @@ const EditMembers = (props) => {
     // resolver: yupResolver(add_new_organization_type_schema),
     mode: "onChange", // Validate on change
     defaultValues: {
-      membership_code: "",
-      user_code: "",
+      code: selectedMember?.code || "",
+      user: selectedMember?.user || "",
     },
   });
 
@@ -23,7 +25,7 @@ const EditMembers = (props) => {
     console.log("data :: ", data);
 
     try {
-      await onSubmit(data);
+      // await onSubmit(data);
       reset();
     } catch (error) {
       console.log("Submission error: ", error);
@@ -32,7 +34,13 @@ const EditMembers = (props) => {
 
   return (
     <>
-      <ButtonIcon icon={FiEdit2} iconPosition="left">
+      <ButtonIcon
+        icon={FiEdit2}
+        iconPosition="left"
+        onClick={() => {
+          setCurrentView("Add_New_Member");
+        }}
+      >
         Edit Organization Type
       </ButtonIcon>
       <div className="relative min-h-[52vh] p-4 mt-[32px] bg-white drop-shadow-md border-b border-gray-300 px-3 py-2">
@@ -45,7 +53,7 @@ const EditMembers = (props) => {
             type="text"
             label="Membership Code"
             placeholder="Auto"
-            {...register("membership_code")}
+            {...register("code")}
             error={errors.code?.message || serverErrors?.code}
             autoComplete="off"
             autoFocus
@@ -54,7 +62,7 @@ const EditMembers = (props) => {
             type="text"
             label="User Code"
             placeholder="Auto"
-            {...register("user_code")}
+            {...register("user")}
             error={errors.code?.message || serverErrors?.code}
           />
 

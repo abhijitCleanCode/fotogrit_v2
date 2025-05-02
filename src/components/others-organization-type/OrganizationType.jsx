@@ -83,7 +83,7 @@ const OrganizationType = () => {
   const { data, isLoading, isSuccess, isError, error } =
     useGetOrganizationTypeListQuery({
       page: currentPage,
-      limit: 10,
+      limit: 100,
       searchTerm: debouncedSearchValue || undefined,
     });
 
@@ -151,7 +151,13 @@ const OrganizationType = () => {
       {currentView === VIEW_STATES.EDIT && (
         <div>
           <Suspense fallback={<SkeletonBlock />}>
-            <LazyButtonIcon icon={FiEdit2} iconPosition="left">
+            <LazyButtonIcon
+              icon={FiEdit2}
+              iconPosition="left"
+              onClick={() => {
+                setCurrentView(VIEW_STATES.LIST);
+              }}
+            >
               Edit Organization Type
             </LazyButtonIcon>
           </Suspense>

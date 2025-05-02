@@ -112,10 +112,6 @@ const OrganizationMainOrganization = () => {
 
   const handleEditClick = useCallback((organization) => {
     setSelectedOrganization(organization);
-    console.log(
-      "src :: pages :: OrganizationMainOrganization :: handleEditClick :: organization :: ",
-      organization
-    );
     setCurrentView(VIEW_STATES.EDIT);
   }, []);
 
@@ -176,12 +172,14 @@ const OrganizationMainOrganization = () => {
             </div>
           )}
 
+          {/* potential improvement: bring edit org button in this component, no need to pass state to child component */}
           {currentView === VIEW_STATES.EDIT && (
             <div className="mt-[32px]">
               <FormEditOrganization
                 initialValues={selectedOrganization}
                 optionsOrgTypes={optionsOrgTypes}
                 cities={optionsCities}
+                setCurrentView={setCurrentView}
               />
             </div>
           )}
