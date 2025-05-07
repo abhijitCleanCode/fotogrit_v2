@@ -24,6 +24,13 @@ export const MainOrganizationSlice = apiCore.injectEndpoints({
       }),
       invalidatesTags: ["MainOrganization"],
     }),
+    deleteOrganization: builder.mutation({
+      query: ({ id }) => ({
+        url: `/restricted/api/v1/orgs/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["MainOrganization"],
+    }),
   }),
 });
 
@@ -31,4 +38,5 @@ export const {
   useGetOrganizationListQuery,
   useAddNewOrganizationMutation,
   useUpdateOrganizationMutation,
+  useDeleteOrganizationMutation,
 } = MainOrganizationSlice;

@@ -27,8 +27,9 @@ const TableOrganizationType = (props) => {
   const dataTable = data?.data?.org_types;
   const meta = data?.meta;
 
-  const totalPages = meta?.total_page || 1;
+  // const totalPages = meta?.total_page || 1;
   const totalRecords = meta?.total_record;
+  const totalPages = Math.ceil(totalRecords / limitPerPage) || 1;
 
   const columns = [
     {

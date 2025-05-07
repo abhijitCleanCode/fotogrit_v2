@@ -41,13 +41,17 @@ const SearchWithFilter = ({
   className = "",
   placeholder = "Search...",
   searchValue = "",
-  onSearchChange = "",
-  onFilterClick = "",
-  filterActive = "",
+  onSearchChange = () => {},
+  onFilterClick = () => {},
+  filterActive = false,
 }) => {
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <SearchInputAbhijit />
+      <SearchInputAbhijit
+        placeholder={placeholder}
+        searchValue={searchValue}
+        onChange={(e) => onSearchChange(e.target.value)}
+      />
 
       <button
         // variant={filterActive ? "default" : "secondary"}
@@ -75,11 +79,15 @@ const OrganizationMainOrganization = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [limitPerPage] = useState(10);
+  const [searchValue, setSearchValue] = useState("");
 
+  // for options org type
   const {
     data: organizationTypes,
     // isLoading,
+    // isSuccess,
     // isError,
+    // error,
   } = useGetOrganizationTypeListQuery({
     limit: 100,
   });
@@ -90,6 +98,7 @@ const OrganizationMainOrganization = () => {
     })
   );
 
+  // for options filter city
   const { data: cities } = useGetCitiesQuery({
     page: 1,
     searchTerm: "",
@@ -102,13 +111,22 @@ const OrganizationMainOrganization = () => {
     optionsCities.unshift({ value: "", label: "Select City" });
   }
 
+  // for table, and also options for parent organization
   const {
     data: organizationList,
     isLoading,
     isSuccess,
     isError,
     error,
-  } = useGetOrganizationListQuery({});
+  } = useGetOrganizationListQuery({
+    page: currentPage,
+    limit: limitPerPage,
+    searchTerm: searchValue,
+  });
+  const optionsOrganizations = organizationList?.data?.orgs?.map((item) => ({
+    value: item?.id,
+    label: `${item?.code} ${item?.name ? ` - ${item?.name}` : ""}`,
+  }));
 
   const handleEditClick = useCallback((organization) => {
     setSelectedOrganization(organization);
@@ -136,7 +154,11 @@ const OrganizationMainOrganization = () => {
                   Add new organization
                 </LazyButtonIcon>
 
-                <SearchWithFilter className="max-w-2xl" />
+                <SearchWithFilter
+                  className="max-w-2xl"
+                  searchValue={searchValue}
+                  onSearchChange={setSearchValue}
+                />
               </Suspense>
             </div>
           )}
@@ -147,6 +169,7 @@ const OrganizationMainOrganization = () => {
                 <AddNewOrganization
                   optionsOrgTypes={optionsOrgTypes}
                   cities={optionsCities}
+                  optionsOrganizations={optionsOrganizations}
                 />
               </div>
             </Collapse>
@@ -180,6 +203,7 @@ const OrganizationMainOrganization = () => {
                 optionsOrgTypes={optionsOrgTypes}
                 cities={optionsCities}
                 setCurrentView={setCurrentView}
+                optionsOrganizations={optionsOrganizations}
               />
             </div>
           )}

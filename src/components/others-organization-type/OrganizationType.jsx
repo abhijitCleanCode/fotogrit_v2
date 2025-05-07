@@ -83,7 +83,7 @@ const OrganizationType = () => {
   const { data, isLoading, isSuccess, isError, error } =
     useGetOrganizationTypeListQuery({
       page: currentPage,
-      limit: 100,
+      limit: limitPerPage,
       searchTerm: debouncedSearchValue || undefined,
     });
 

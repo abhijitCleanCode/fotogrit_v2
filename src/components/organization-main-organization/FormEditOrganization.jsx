@@ -5,13 +5,17 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { add_new_organization_schema } from "./schemaValidation";
 // components
+import { PopUpDelete } from "..";
 import { ButtonIcon } from "../abhijit-component";
 import FormInputAbhijit from "../abhijit-component/FormInputAbhijit";
 // icons
 import { IoIosArrowUp } from "react-icons/io";
 import { FiUploadCloud } from "react-icons/fi";
-import { SelectDropdown } from "../form-input";
-import { useUpdateOrganizationMutation } from "@/services/api/orgMainOrgApiSlice";
+import { SelectDropdown, UploadImage } from "../form-input";
+import {
+  useDeleteOrganizationMutation,
+  useUpdateOrganizationMutation,
+} from "@/services/api/orgMainOrgApiSlice";
 import { toast } from "react-toastify";
 
 const FileUploadField = ({ register, errors, setValue, watch }) => {
@@ -121,6 +125,7 @@ const FormEditOrganization = ({
   serverErrors,
   initialValues,
   optionsOrgTypes,
+  optionsOrganizations,
   cities,
   setCurrentView,
 }) => {
@@ -142,7 +147,9 @@ const FormEditOrganization = ({
       name: initialValues.name || "",
       short_name: initialValues.short_name || "",
       legal_document_number: initialValues.legal_document_number || "",
+      org_email: initialValues.org_email || "",
       org_type: initialValues.org_type || "",
+      parent_org_id: initialValues.parent_org_id || "",
       city: initialValues.city || "",
       location: initialValues.location || "",
       pic: initialValues.pic || "",
@@ -155,8 +162,13 @@ const FormEditOrganization = ({
     },
   });
 
+  const [isOpenPopUpDelete, setIsOpenPopUpDelete] = useState(false);
+
   const [selectedOrgType, setSelectedOrgType] = useState("");
   const [selectedCityValue, setSelectedCityValue] = useState("");
+  const [selectedParentOrg, setSelectedParentOrg] = useState("");
+  const [selectedOrgLogo, setSelectedOrgLogo] = useState("");
+  const [errorImg, setErrorImg] = useState(null);
 
   const [updateOrganization] = useUpdateOrganizationMutation();
   const handleFormSubmit = async (data) => {
@@ -169,7 +181,9 @@ const FormEditOrganization = ({
       formData.append("name", data.name);
       formData.append("short_name", data.short_name);
       formData.append("legal_document_number", data.legal_document_number);
+      formData.append("org_email", data.org_email);
       formData.append("org_type", data.org_type);
+      formData.append("parent_org_id", data.parent_org_id);
       formData.append("city", data.city);
       formData.append("location", data.location);
       formData.append("pic", data.pic);
@@ -178,9 +192,15 @@ const FormEditOrganization = ({
       formData.append("instagram", data.instagram);
       formData.append("facebook", data.facebook);
       formData.append("tiktok", data.tiktok);
-      formData.append("logo", data.logo);
 
-      console.log("formData :: ", formData);
+      if (selectedOrgLogo) {
+        formData.append("logo", selectedOrgLogo);
+      }
+
+      // If editing and no new logo was selected, keep the existing logo
+      if (!selectedOrgLogo && initialValues.logo) {
+        formData.append("logo", initialValues.logo);
+      }
 
       const response = await updateOrganization(formData).unwrap();
       console.log("response :: ", response);
@@ -200,8 +220,43 @@ const FormEditOrganization = ({
       });
     }
   };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
 
-  const handleDelete = async () => {};
+    if (file) {
+      if (file.type.startsWith("image/")) {
+        setErrorImg(null);
+        setSelectedOrgLogo(file);
+        setValue("logo", file); // Update react-hook-form value
+        clearErrors("logo");
+      } else {
+        setErrorImg("Invalid file type. Please select an image.");
+        setSelectedOrgLogo(null);
+      }
+    }
+  };
+
+  const [deleteOrganization] = useDeleteOrganizationMutation();
+  const handleDelete = async () => {
+    try {
+      const response = await deleteOrganization({
+        id: initialValues.id,
+      }).unwrap();
+      console.log("response :: ", response);
+      if (response.message === "success") {
+        toast.success(`${initialValues.name} has been deleted!`, {
+          position: "top-right",
+          theme: "light",
+        });
+      }
+    } catch (error) {
+      console.error("Failed:", error);
+      toast.error(`Failed: ${error?.data?.message}`, {
+        position: "top-right",
+        theme: "light",
+      });
+    }
+  };
 
   // social field protocols
   const [protocols, setProtocols] = useState({
@@ -310,6 +365,35 @@ const FormEditOrganization = ({
           <div className="ms:z-10">
             <Controller
               control={control}
+              name="parent_org_id"
+              render={({ field }) => {
+                useEffect(() => {
+                  setSelectedParentOrg(field.value);
+                }, [field.value]);
+                return (
+                  <SelectDropdown
+                    field={field}
+                    name="parent_org_id"
+                    data={optionsOrganizations}
+                    label="Parent Organization"
+                    placeholder="Select Parent Organization"
+                    selectedValue={selectedParentOrg}
+                    setSelectedValue={(val) => {
+                      setSelectedParentOrg(val?.label);
+                      field.onChange(val?.value);
+                    }}
+                    error={errors.city?.message || serverErrors?.city}
+                    setSearchQueryOption={() => {}}
+                    infiniteScroll
+                    setPageOption={() => {}}
+                  />
+                );
+              }}
+            />
+          </div>
+          <div className="ms:z-10">
+            <Controller
+              control={control}
               name="city"
               render={({ field }) => {
                 useEffect(() => {
@@ -398,19 +482,27 @@ const FormEditOrganization = ({
           ))}
 
           <div className="absolute bottom-0 right-0 pb-2 mr-2 mt-4 flex flex-col justify-end item-end gap-4">
-            <FileUploadField
-              register={register}
-              errors={errors}
-              setValue={setValue}
-              watch={watch}
+            <UploadImage
+              label="Organization Logo"
+              name="logo"
+              onChange={handleImageChange}
+              selectedImage={selectedOrgLogo}
+              setSelectedImage={setSelectedOrgLogo}
+              errorImg={errorImg}
+              setErrorImg={setErrorImg}
+              accept="image/jpg,image/jpeg"
+              height="h-28 sm:h-[168px]"
+              objectFit="object-contain"
+              errServer={serverErrors?.data}
+              errCodeServer="xxx025"
             />
             {/* form action */}
             <div className="flex justify-end item-end gap-4">
               <ButtonIcon
                 type="button"
-                onClick={onCancel}
+                onClick={() => setIsOpenPopUpDelete(true)}
                 variant="secondary"
-                disabled={isLoading}
+                // disabled={isLoading}
               >
                 Delete
               </ButtonIcon>
@@ -426,6 +518,15 @@ const FormEditOrganization = ({
           </div>
         </form>
       </div>
+
+      <PopUpDelete
+        handleDelete={handleDelete}
+        isLoading={isLoading}
+        setIsOpenPopUpDelete={setIsOpenPopUpDelete}
+        isOpenPopUpDelete={isOpenPopUpDelete}
+        data={initialValues.name} // or organizationId if you prefer
+        message="Are you sure you want to delete this organization?"
+      />
     </div>
   );
 };

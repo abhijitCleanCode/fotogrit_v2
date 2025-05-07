@@ -10,7 +10,7 @@ import FormInputAbhijit from "../abhijit-component/FormInputAbhijit";
 // icons
 import { IoIosArrowUp } from "react-icons/io";
 import { FiUploadCloud } from "react-icons/fi";
-import { SelectDropdown } from "../form-input";
+import { SelectDropdown, UploadImage } from "../form-input";
 import { useAddNewOrganizationMutation } from "@/services/api/orgMainOrgApiSlice";
 import { toast } from "react-toastify";
 
@@ -69,6 +69,7 @@ const AddNewOrganization = (props) => {
     isLoading = false,
     serverErrors,
     optionsOrgTypes,
+    optionsOrganizations,
     cities,
   } = props;
 
@@ -89,7 +90,9 @@ const AddNewOrganization = (props) => {
       name: "",
       short_name: "",
       legal_document_number: "",
+      org_email: "",
       org_type: "",
+      parent_org_id: "",
       city: "",
       location: "",
       pic: "",
@@ -104,6 +107,9 @@ const AddNewOrganization = (props) => {
 
   const [selectedOrgType, setSelectedOrgType] = useState("");
   const [selectedCityValue, setSelectedCityValue] = useState("");
+  const [selectedParentOrg, setSelectedParentOrg] = useState("");
+  const [selectedOrgLogo, setSelectedOrgLogo] = useState("");
+  const [errorImg, setErrorImg] = useState(null);
 
   const [addNewOrganization] = useAddNewOrganizationMutation();
   const handleFormSubmit = async (data) => {
@@ -114,7 +120,9 @@ const AddNewOrganization = (props) => {
       formData.append("name", data.name);
       formData.append("short_name", data.short_name);
       formData.append("legal_document_number", data.legal_document_number);
+      formData.append("org_email", data.org_email);
       formData.append("org_type", data.org_type);
+      formData.append("parent_org_id", data.parent_org_id);
       formData.append("city", data.city);
       formData.append("location", data.location);
       formData.append("pic", data.pic);
@@ -123,9 +131,10 @@ const AddNewOrganization = (props) => {
       formData.append("instagram", data.instagram);
       formData.append("facebook", data.facebook);
       formData.append("tiktok", data.tiktok);
-      formData.append("logo", data.logo);
 
-      console.log("formData :: ", formData);
+      if (selectedOrgLogo) {
+        formData.append("logo", selectedOrgLogo);
+      }
 
       const response = await addNewOrganization(formData).unwrap();
       console.log("response :: ", response);
@@ -143,6 +152,22 @@ const AddNewOrganization = (props) => {
         position: "top-right",
         theme: "light",
       });
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      if (file.type.startsWith("image/")) {
+        setErrorImg(null);
+        setSelectedOrgLogo(file);
+        setValue("logo", file); // Update react-hook-form value
+        clearErrors("logo");
+      }
+    } else {
+      setErrorImg("Invalid file type. Please select an image.");
+      setSelectedOrgLogo(null);
     }
   };
 
@@ -181,11 +206,11 @@ const AddNewOrganization = (props) => {
         className="grid grid-flow-row-dense md:grid-cols-2 lg:grid-cols-3 gap-4 sm:grid-cols-1 gap-y-2"
         noValidate
       >
-        {/* Basic Information */}
+        {/* basic Information */}
         <FormInputAbhijit
           type="text"
           label="Organization Code"
-          placeholder="Organization Code"
+          placeholder="Auto"
           // {...register("code")}
           // error={errors.code?.message || serverErrors?.code}
           // autoComplete="off"
@@ -211,7 +236,16 @@ const AddNewOrganization = (props) => {
           label="Legal Document Number"
           placeholder="Enter Legal Document Number"
           {...register("legal_document_number")}
-          // error={errors.legal_document_number?.message || serverErrors?.shortname}
+          error={
+            errors.legal_document_number?.message || serverErrors?.shortname
+          }
+        />
+        <FormInputAbhijit
+          type="text"
+          label="Organization Email"
+          placeholder="Enter Organization Email"
+          {...register("org_email")}
+          error={errors.org_email?.message || serverErrors?.shortname}
         />
         <div className="z-[21]">
           <Controller
@@ -235,6 +269,35 @@ const AddNewOrganization = (props) => {
                     field.onChange(val?.label);
                   }}
                   error={errors.org_type?.message || serverErrors?.org_type}
+                  setSearchQueryOption={() => {}}
+                  infiniteScroll
+                  setPageOption={() => {}}
+                />
+              );
+            }}
+          />
+        </div>
+        <div className="ms:z-10">
+          <Controller
+            control={control}
+            name="parent_org_id"
+            render={({ field }) => {
+              useEffect(() => {
+                setSelectedParentOrg(field.value);
+              }, [field.value]);
+              return (
+                <SelectDropdown
+                  field={field}
+                  name="parent_org_id"
+                  data={optionsOrganizations}
+                  label="Parent Organization"
+                  placeholder="Select Parent Organization"
+                  selectedValue={selectedParentOrg}
+                  setSelectedValue={(val) => {
+                    setSelectedParentOrg(val?.label);
+                    field.onChange(val?.value);
+                  }}
+                  error={errors.city?.message || serverErrors?.city}
                   setSearchQueryOption={() => {}}
                   infiniteScroll
                   setPageOption={() => {}}
@@ -334,11 +397,22 @@ const AddNewOrganization = (props) => {
         ))}
 
         <div className="absolute bottom-0 right-0 pb-2 mr-2 mt-4 flex flex-col justify-end item-end gap-4">
-          <FileUploadField
-            register={register}
-            errors={errors}
-            setValue={setValue}
+          <UploadImage
+            label="Organization Logo"
+            name="logo"
+            onChange={handleImageChange}
+            selectedImage={selectedOrgLogo}
+            setSelectedImage={setSelectedOrgLogo}
+            errorImg={errorImg}
+            setErrorImg={setErrorImg}
+            accept="image/jpg,image/jpeg"
+            height="h-28 sm:h-[168px]"
+            objectFit="object-contain"
+            errServer={serverErrors?.data}
+            errCodeServer="xxx025"
           />
+
+          {/* form action */}
           <div className="flex justify-end item-end gap-4">
             <ButtonIcon
               type="button"

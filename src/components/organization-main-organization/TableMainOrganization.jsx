@@ -19,8 +19,8 @@ const TableMainOrganization = (props) => {
     setOpenModal,
     setGetData,
     limitPerPage,
-    setCurrentPage,
     currentPage,
+    setCurrentPage,
     onEditClick,
   } = props;
 
@@ -29,10 +29,30 @@ const TableMainOrganization = (props) => {
       {
         id: "code",
         name: "Organization Code",
-        selector: (row) => row.code || "-",
-        cell: (row) => row.code || "-",
+        selector: (row) => row.code || "-", // sorting
+        cell: (row) =>
+          row.logo ? (
+            <div className="p-2 flex gap-2 items-center">
+              <img
+                src={row.logo}
+                alt={row.code}
+                className="object-cover w-full h-14"
+              />
+              <p>{row.code}</p>
+            </div>
+          ) : (
+            <div className="p-2 flex gap-2 items-center">
+              <img
+                src="/images/logo-fotogrit.png"
+                alt="placeholder image"
+                className="object-cover w-full h-14"
+              />
+              <p>{row.code}</p>
+            </div>
+          ),
         sortable: true,
-        minWidth: "160px",
+        minWidth: "260px",
+        // center: true,
         wrap: true,
       },
       {
@@ -125,7 +145,7 @@ const TableMainOrganization = (props) => {
             fixedHeaderScrollHeight="54vh"
             customStyles={customTableStyle_by_abhijit}
             persistTableHead
-            noDataComponent={<NoDataMessage title="Organization Type" />}
+            noDataComponent={<NoDataMessage title="Main Organization" />}
           />
 
           <PaginationAbhijit
