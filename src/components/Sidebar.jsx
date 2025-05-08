@@ -634,12 +634,12 @@ const Sidebar = ({ active }) => {
         {
           name: "Event Group",
           url: "/event-master/event-group",
-          modules: modules[1],
+          modules: groupEvent,
         },
         {
           name: "Event Group Details",
           url: "/event-master/events",
-          modules: modules[2],
+          modules: event,
         },
       ],
     },
@@ -760,6 +760,7 @@ const Sidebar = ({ active }) => {
     //     },
     //   ],
     // },
+
     {
       title: "Club",
       icon: <RiTeamFill />,
