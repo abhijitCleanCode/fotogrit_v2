@@ -2,6 +2,7 @@ import { useEffect, useState, Fragment, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Transition } from "@headlessui/react";
 import { useDispatch, useSelector } from "react-redux";
+import { LuSchool } from "react-icons/lu";
 
 import {
   FaCalendarAlt,
@@ -31,7 +32,6 @@ import { IoIosArrowForward, IoIosConstruct } from "react-icons/io";
 import { RiTeamFill } from "react-icons/ri";
 import { GiTwoCoins } from "react-icons/gi";
 import { TbBrandStripe } from "react-icons/tb";
-import { LuSchool } from "react-icons/lu";
 
 import {
   logOut,
@@ -40,6 +40,7 @@ import {
 } from "@/services/state/authSlice";
 import { Tooltip } from "@/components";
 import { useUpdateActiveEventMutation } from "@/services/api/serviceRequestApiSlice";
+import { generalSettingSlice } from "@/services/api/generalSettingApiSlice";
 
 const MenuRender = ({ item, index, isOpenDropDown, setIsOpenDropDown }) => {
   const currentPathname = window.location.pathname;
@@ -477,60 +478,136 @@ const Sidebar = ({ active }) => {
 
   const canAccessDashboard = true; // dashboard
 
-  const canAccessEventMaster =
-    modules[0]?.can_menu || // event-requested
-    modules[1]?.can_menu || // event-group
-    modules[2]?.can_menu || // events
-    modules[3]?.can_menu; // Assignment
+  const requestOtherService = modules?.find(
+    (module) => module.rule_code === "request_other_service"
+  );
+  const manageServiceRequest = modules?.find(
+    (module) => module.rule_code === "manage_service_request"
+  );
+  const addModifyService = modules?.find(
+    (module) => module.rule_code === "add_modify_service"
+  );
+  const eventChecking = modules?.find(
+    (module) => module.rule_code === "event_checking"
+  );
 
-  const canAccessEventManagement = true;
-  const canAccessDonationManagement = true;
+  const serviceTransaction = modules?.find(
+    (module) => module.rule_code === "service_transaction"
+  );
+
+  const generalSetting = modules?.find(
+    (module) => module.rule_code === "general_setting"
+  );
+  const walletAmount = modules?.find(
+    (module) => module.rule_code === "wallet_amount"
+  );
+  const referral = modules?.find((module) => module.rule_code === "referral");
+  const coinManagement = modules?.find(
+    (module) => module.rule_code === "coin_management"
+  );
+  const order = modules?.find((module) => module.rule_code === "order");
+  const teamMaster = modules?.find(
+    (module) => module.rule_code === "team_master"
+  );
+  const userRole = modules?.find((module) => module.rule_code === "user_role");
+  const userData = modules?.find((module) => module.rule_code === "user_data");
+  const customerData = modules?.find(
+    (module) => module.rule_code === "customer_data"
+  );
+  const org = modules?.find((module) => module.rule_code === "org");
+
+  const eventType = modules?.find(
+    (module) => module.rule_code === "event_type"
+  );
+  const ageGroup = modules?.find((module) => module.rule_code === "age_group");
+  const appSettings = modules?.find(
+    (module) => module.rule_code === "app_settings"
+  );
+  const eventMatchCategory = modules?.find(
+    (module) => module.rule_code === "event_match_category"
+  );
+  const eventMatchPool = modules?.find(
+    (module) => module.rule_code === "event_match_pool"
+  );
+  const mainPosition = modules?.find(
+    (module) => module.rule_code === "main_position"
+  );
+  const cart = modules?.find((module) => module.rule_code === "cart");
+  const transaction = modules?.find(
+    (module) => module.rule_code === "transaction"
+  );
+  const sponsor = modules?.find(
+    (module) => module.rule_code === "sponsor_master"
+  );
+
+  const walletTransaction = modules?.find(
+    (module) => module.rule_code === "wallet_transaction"
+  );
+
+  const groupEvent = modules?.find(
+    (module) => module.rule_code === "group_event"
+  );
+
+  const event = modules?.find((module) => module.rule_code === "event");
+
+  const topup = modules?.find((module) => module.rule_code === "top_up");
+
+  const canAccessEventMaster =
+    walletTransaction?.can_menu || // event-requested
+    groupEvent?.can_menu || // event-group
+    event?.can_menu || // events
+    topup?.can_menu; // Assignment
 
   const canAccessPhotographerManagement =
-    modules[25]?.can_menu || // request-other-service
-    modules[26]?.can_menu || // add/modify-my-service
-    modules[27]?.can_menu || // event-checking
-    modules[28]?.can_menu; // manage-service-request
+    requestOtherService?.can_menu || // request-other-service
+    manageServiceRequest?.can_menu || // add/modify-my-service
+    addModifyService?.can_menu || // event-checking
+    eventChecking?.can_menu; // manage-service-request
 
-  const canAccessWalletManagement = modules[37]?.can_menu; // service transaction
+  // const canAccessWalletManagement = serviceTransaction?.can_menu; // service transaction
   // const canAccessCompensation = true;
 
+  const approvalWalletBenefits = modules?.find(
+    (module) => module.rule_code === "approval_wallet_benefit"
+  );
+  const approvalVisibiltyService = modules?.find(
+    (module) => module.rule_code === "approval_visibility_service"
+  );
   const canAccessApprovalManagement =
-    modules[24]?.can_menu || // Approval-wallet-benefit-code
-    modules[6]?.can_menu; // Approval-visibility-service
+    approvalWalletBenefits?.can_menu || // Approval-wallet-benefit-code
+    approvalVisibiltyService?.can_menu; // Approval-visibility-service
 
   const canAccessCommerseSetting =
-    modules[8]?.can_menu || // general-setting
-    modules[22]?.can_menu || // wallet-amount
-    modules[23]?.can_menu || // referral
-    modules[41]?.can_menu || // coin-management
-    modules[37]?.can_menu; // wallet-management
+    generalSetting?.can_menu || // general-setting
+    walletAmount?.can_menu || // wallet-amount
+    referral?.can_menu || // referral
+    coinManagement?.can_menu || // coin-management
+    serviceTransaction?.can_menu; // wallet-management
 
-  const canAccessOrder = modules[16]?.can_menu; // order
-  const canAccessTeamMaster = modules[10]?.can_menu; // team-master
-  const canAccessCoinManagement = modules[41]?.can_menu; // coins-management
+  // const canAccessOrder = order?.can_menu; // order
+  // const canAccessTeamMaster = teamMaster?.can_menu; // team-master
+  // const canAccessCoinManagement = coinManagement?.can_menu; // coins-management
 
   const canAccessUserCMSManagement =
-    modules[11]?.can_menu || // user-role
-    modules[12]?.can_menu; // admin/user data
+    userRole?.can_menu || // user-role
+    userData?.can_menu; // admin/user data
 
-  const canAccessCustomerManagement = modules[13]?.can_menu; // customer-data
+  const canAccessCustomerManagement = customerData?.can_menu; // customer-data
 
-  const canAccessClubManagement =
-    modules[15]?.can_menu || modules[10]?.can_menu; // club
+  const canAccessClubManagement = org?.can_menu || teamMaster?.can_menu; // club
 
   const canAccessOthers =
-    modules[14]?.can_menu || // event type
-    modules[19]?.can_menu || // age group
-    modules[17]?.can_menu || // app-setting
-    modules[38]?.can_menu || // event-match-category
-    modules[39]?.can_menu || // event-match-pool
-    modules[40]?.can_menu; // main-position
+    eventType?.can_menu || // event type
+    ageGroup?.can_menu || // age group
+    appSettings?.can_menu || // app-setting
+    eventMatchCategory?.can_menu || // event-match-category
+    eventMatchPool?.can_menu || // event-match-pool
+    mainPosition?.can_menu; // main-position
 
-  const canAccessPaymentCart = modules[31]?.can_menu; // payment & cart
-  const canAccessReports = modules[43]?.can_menu; // reports > transaction
-  const canAccessSponsor = modules[42]?.can_menu; // sponsor
-  const canAccessNews = modules[42]?.can_menu; // news
+  const canAccessPaymentCart = cart?.can_menu; // payment & cart
+  const canAccessReports = transaction?.can_menu || order?.can_menu; // reports > transaction
+  const canAccessSponsor = sponsor?.can_menu; // sponsor
+  const canAccessNews = sponsor?.can_menu; // news
 
   const modulesDummy = {
     can_menu: true,
@@ -693,7 +770,7 @@ const Sidebar = ({ active }) => {
         {
           name: "Club Management",
           url: "/club-management/modify-club",
-          modules: modules[15],
+          modules: org,
         },
         // {
         //   name: 'Approval of clubs',
@@ -719,12 +796,12 @@ const Sidebar = ({ active }) => {
             {
               name: "User Role",
               url: "/cms-management/user-role",
-              modules: modules[11],
+              modules: userRole,
             },
             {
               name: "User Data",
               url: "/cms-management/user-data",
-              modules: modules[12],
+              modules: userData,
             },
           ],
         },
@@ -739,7 +816,7 @@ const Sidebar = ({ active }) => {
             {
               name: "Customer Data",
               url: "/customer-management/customer-data",
-              modules: modules[13],
+              modules: customerData,
             },
           ],
         },
@@ -755,7 +832,7 @@ const Sidebar = ({ active }) => {
         {
           name: "Request Other Service",
           url: "/service-management/request-other-service",
-          modules: modules[25],
+          modules: requestOtherService,
         },
         {
           name: "My Services",
@@ -764,17 +841,17 @@ const Sidebar = ({ active }) => {
             {
               name: "Add/Modify My Service",
               url: "/service-management/my-services/add-modify",
-              modules: modules[26],
+              modules: addModifyService,
             },
             {
               name: "Manage Service Request",
               url: "/service-management/my-services/manage-request",
-              modules: modules[28],
+              modules: manageServiceRequest,
             },
             {
               name: "Event Checking",
               url: "/service-management/my-services/event-checking",
-              modules: modules[27],
+              modules: eventChecking,
             },
           ],
         },
@@ -859,13 +936,13 @@ const Sidebar = ({ active }) => {
           name: "Coin Management",
           // icon: <GiTwoCoins />,
           url: "/commerce-setting/coin-management",
-          modules: modules[41],
+          modules: coinManagement,
           // isProd: true,
         },
         {
           name: "Wallet Management",
           url: "/commerce-setting/service-transaction",
-          modules: modules[37],
+          modules: serviceTransaction,
         },
       ],
     },
@@ -886,13 +963,13 @@ const Sidebar = ({ active }) => {
           name: "Order",
           // icon: <FaBagShopping />,
           url: "/reports/order",
-          modules: modules[16],
+          modules: order,
           // isProd: true,
         },
         {
           name: "Transaction",
           url: "/reports/transaction",
-          modules: modules[43], // rule_code: transaction
+          modules: transaction, // rule_code: transaction
         },
         // {
         //   name: 'Users',
@@ -919,7 +996,7 @@ const Sidebar = ({ active }) => {
         {
           name: "Approval & Visibility Service",
           url: "/approval-management/visibilty-service",
-          modules: modules[6],
+          modules: approvalVisibiltyService,
         },
         // {
         //   name: 'Approval & Visibility Equipment',
@@ -936,7 +1013,7 @@ const Sidebar = ({ active }) => {
         {
           name: "Approval Wallet Benefits",
           url: "/approval-management/wallet-benefits",
-          modules: modules[24],
+          modules: approvalWalletBenefits,
         },
       ],
     },
@@ -950,12 +1027,12 @@ const Sidebar = ({ active }) => {
         {
           name: "Dashboard",
           url: "/reports/dashboard",
-          modules: modules[6],
+          modules: approvalVisibiltyService,
         },
         {
           name: "Transaction",
           url: "/reports/transaction",
-          modules: modules[24],
+          modules: approvalWalletBenefits,
         },
       ],
     },
@@ -1040,7 +1117,7 @@ const Sidebar = ({ active }) => {
         {
           name: "App Setting",
           url: "/others/app-setting",
-          modules: modules[17],
+          modules: appSettings,
         },
 
         {
@@ -1053,12 +1130,12 @@ const Sidebar = ({ active }) => {
             {
               name: "Event Type",
               url: "/others/event-type",
-              modules: modules[14], // event-type
+              modules: eventType, // event-type
             },
             {
               name: "Age Group",
               url: "/others/age-group",
-              modules: modules[19], // age-group
+              modules: ageGroup, // age-group
             },
             // {
             //   name: 'Pool',
@@ -1068,12 +1145,12 @@ const Sidebar = ({ active }) => {
             {
               name: "Event Match",
               url: "/others/event-match",
-              modules: modules[38], // event_match_category
+              modules: eventMatchCategory, // event_match_category
             },
             {
               name: "Main Position",
               url: "/others/main-position",
-              modules: modules[40], // main-position
+              modules: mainPosition, // main-position
             },
             //! abhijit changes
             {
@@ -1093,7 +1170,7 @@ const Sidebar = ({ active }) => {
             {
               name: "General Setting",
               url: "/commerce-setting/general",
-              modules: modules[8],
+              modules: generalSetting,
             },
             // {
             //   name: 'Add/Modify User Benefits & Code',
@@ -1104,12 +1181,12 @@ const Sidebar = ({ active }) => {
             {
               name: "Add/Modify Wallet Benefits Code",
               url: "/commerce-setting/wallet-benefits-code",
-              modules: modules[23],
+              modules: referral,
             },
             {
               name: "Add/Modify Top Up",
               url: "/commerce-setting/modify-topup",
-              modules: modules[22],
+              modules: walletAmount,
             },
           ],
         },
