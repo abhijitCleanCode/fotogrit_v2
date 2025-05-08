@@ -2,7 +2,7 @@
 import getApiUrl from "@/helpers/GetApiUrl";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_URL = "https://api-s.fotogrit.id";
+const API_URL = "https://api-dev.fotogrit.id";
 
 // Define a service using a base URL and expected endpoints
 export const apiCore = createApi({
